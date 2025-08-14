@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Billet Predictor</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 50px;
+      background: #f4f6f8;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .upload-area {
+      background: white;
+      border: 2px dashed #3498db;
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      width: 400px;
+      transition: background 0.3s;
+    }
+    .upload-area:hover {
+      background: #ecf0f1;
+    }
+    input[type="file"] {
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Billet Prediction App 💸</h1>
+  <div class="upload-area">
+    <p>Sélectionnez un fichier CSV</p>
+    <input type="file" id="fileInput" accept=".csv" />
+    <br>
+    <button onclick="uploadFile()">Envoyer</button>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    async function uploadFile() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Veuillez choisir un fichier CSV.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const statusText = document.getElementById("status");
+      statusText.innerText = "Traitement en cours...";
+
+      try {
+        const response = await fetch("/predict-file/", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Erreur API");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "predictions.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        statusText.innerText = "✅ Fichier généré avec succès.";
+      } catch (error) {
+        statusText.innerText = "❌ Erreur lors de l'envoi du fichier.";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
