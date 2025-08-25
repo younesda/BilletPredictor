@@ -6,3 +6,4 @@ fastapi
 uvicorn
 numpy
 requests
+python-multipart
