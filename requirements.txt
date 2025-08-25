@@ -4,5 +4,5 @@ scikit-learn
 joblib
 fastapi
 uvicorn
+numpy
 requests
-gunicorn

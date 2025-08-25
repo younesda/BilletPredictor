@@ -3,15 +3,11 @@ import pandas as pd
 import requests
 from io import StringIO
 
-# Nettoyer le cache de Streamlit
+# Nettoyer le cache
 st.cache_data.clear()
 
-# Configuration de la page
-st.set_page_config(
-    page_title="Billet Predictor",
-    page_icon="💸",
-    layout="wide"
-)
+# Config page
+st.set_page_config(page_title="Billet Predictor", page_icon="💸", layout="wide")
 
 # HEADER
 st.markdown("""
@@ -23,8 +19,8 @@ h1 {color: #2E86C1; font-size: 3rem;}
 st.title("💸 Billet Predictor")
 st.markdown("""
 Bienvenue !  
-Upload un fichier CSV contenant les billets à analyser et obtenez directement :
-- ✅ Prédiction billet authentique ou non
+Upload un fichier CSV contenant les billets à analyser et obtenez :
+- ✅ Prédiction billet authentique ou non  
 - 📊 Probabilité associée
 """)
 
@@ -35,33 +31,32 @@ uploaded_file = st.file_uploader("Choisissez un fichier CSV", type="csv")
 
 if uploaded_file is not None:
     st.success(f"✅ Fichier chargé : **{uploaded_file.name}**")
-    
     st.info("Cliquez sur le bouton ci-dessous pour lancer la prédiction.")
-    
+
     if st.button("🔍 Lancer la prédiction"):
         with st.spinner("Envoi du fichier à l'API et génération des prédictions..."):
             try:
-                # Appel API FastAPI
+                # Envoi du fichier à FastAPI
                 response = requests.post(
                     "http://127.0.0.1:8000/predict-file/",
                     files={"file": (uploaded_file.name, uploaded_file, "text/csv")}
                 )
-                
+
                 if response.status_code == 200:
                     csv_text = response.content.decode("utf-8")
                     df_result = pd.read_csv(StringIO(csv_text), sep=';')
-                    
+
                     st.success("🎉 Prédictions générées !")
-                    
-                    # Metrics : nombre de billets vrais/faux
+
+                    # Metrics
                     col1, col2 = st.columns(2)
                     col1.metric("Billets authentiques", int(df_result['prediction'].sum()))
-                    col2.metric("Billets non authentiques", int(len(df_result)-df_result['prediction'].sum()))
-                    
-                    # Affichage du tableau
+                    col2.metric("Billets non authentiques", int(len(df_result) - df_result['prediction'].sum()))
+
+                    # Tableau
                     st.dataframe(df_result.style.highlight_max(subset=['proba'], color='lightgreen'))
-                    
-                    # Bouton pour télécharger CSV
+
+                    # Téléchargement
                     st.download_button(
                         label="⬇️ Télécharger les résultats CSV",
                         data=csv_text,
@@ -77,5 +72,5 @@ if uploaded_file is not None:
 # FOOTER
 st.markdown("---")
 st.markdown("""
-Développé par Younes HACHAMI | Modèle Random Forest | 💡 ML pour la détection de billets
+Développé par **Younes HACHAMI** | Modèle Random Forest | 💡 ML pour la détection de billets
 """)
